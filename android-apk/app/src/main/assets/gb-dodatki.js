@@ -14,7 +14,7 @@ const translations={
 'Godzina wyjazdu (HH:MM)':['Departure time (HH:MM)','Abfahrtszeit (HH:MM)'],'Godzina powrotu (HH:MM)':['Return time (HH:MM)','Rückkehrzeit (HH:MM)'],'Początkowy stan licznika (km)':['Initial odometer (km)','Kilometerstand bei Abfahrt (km)'],'Końcowy stan licznika (km)':['Final odometer (km)','Kilometerstand bei Rückkehr (km)'],'Ile masz płacone za jeden dzień urlopu? (zł)':['Pay per leave day (PLN)','Vergütung pro Urlaubstag (PLN)'],
 'Wpisz poprawny stan licznika.':['Enter a valid odometer reading.','Gültigen Kilometerstand eingeben.'],'Wpisz poprawną godzinę HH:MM.':['Enter a valid HH:MM time.','Gültige Uhrzeit HH:MM eingeben.'],'Wpisz poprawną kwotę urlopu.':['Enter a valid leave amount.','Gültigen Urlaubsbetrag eingeben.'],'Wpisz poprawną stawkę.':['Enter a valid rate.','Gültigen Satz eingeben.'],
 'Zestawienie miesięczne':['Monthly statement','Monatsübersicht'],'Data':['Date','Datum'],'Oznaczenie':['Status','Kennzeichnung'],'Szczegóły':['Details','Details'],'Kwota':['Amount','Betrag'],'Brak wpisów':['No entries','Keine Einträge'],'W trasie / pracuję':['On the road / working','Unterwegs / Arbeit']};
-const reverse=new Map();for(const [pl,arr] of Object.entries(translations)){reverse.set(pl,pl);arr.forEach(x=>reverse.set(x,pl))}
+const reverse=new Map();for(const [pl,arr] of Object.entries(translations)){reverse.set(pl,pl);arr.forEach(x=>{if(x!==pl&&!Object.prototype.hasOwnProperty.call(translations,x))reverse.set(x,pl)})}
 function tr(v){const pl=reverse.get(v)||v;const entry=translations[pl];return !entry||cfg.lang==='pl'?pl:entry[cfg.lang==='en'?0:1]}
 const settings=$('gbAppSettings');
 const VERSION='2.5.0';let settingsPage='menu';
