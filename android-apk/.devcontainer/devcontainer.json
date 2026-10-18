@@ -1,0 +1,6 @@
+{
+  "name": "GB Kalendarz Android",
+  "image": "mcr.microsoft.com/devcontainers/java:1-17-bookworm",
+  "features": { "ghcr.io/devcontainers/features/git:1": {} },
+  "postCreateCommand": "echo 'Projekt gotowy. APK buduj przez Actions > Zbuduj APK Android > Run workflow.'"
+}
