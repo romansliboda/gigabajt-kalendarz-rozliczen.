@@ -13,12 +13,27 @@
     IT: ['🇮🇹', 'Włochy']
   };
 
+  // GB_GPS_FLAG_V1
+  function gbSetFlag(value){
+    const el=document.getElementById('gbTrafficFlag');
+    if(el) el.textContent=value;
+  }
+  function gbSetGpsDot(ok){
+    const banner=document.getElementById('gbTrafficBanner');
+    if(!banner)return;
+    const heading=banner.querySelector('.gb-ban-heading small');
+    if(!heading)return;
+    const dot=heading.querySelector('[data-gb-gps-dot]');
+    if(dot)dot.style.color=ok?'#16a34a':'#dc2626';
+  }
+
   function status(message) {
     const el = document.getElementById('gbTrafficStatus');
     if (el) el.textContent = message;
   }
 
   function updateGPS() {
+    gbSetFlag('🌐');
     if ((typeof gbPermissions === 'undefined' || !gbPermissions.gps)) {
       status('🚛 GPS wyłączony · zakazy niesprawdzone');
       return;
@@ -38,6 +53,7 @@
 
     navigator.geolocation.getCurrentPosition(
       function (position) {
+        gbSetGpsDot(true);
         status('📍 GPS aktywny · ustalanie kraju…');
         const lat = position.coords.latitude;
         const lon = position.coords.longitude;
@@ -48,6 +64,7 @@
             const code = (data.address?.country_code || '').toUpperCase();
             const country = countries[code];
             const flag = country ? country[0] : '🌍';
+            gbSetFlag(flag);
             const name = country ? country[1] : (data.address?.country || 'Nieznany kraj');
             status(flag + ' ' + name + ' · zakazy niesprawdzone');
           })
