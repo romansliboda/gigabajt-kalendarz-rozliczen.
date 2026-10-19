@@ -9,8 +9,20 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.webkit.WebSettings;
+import android.webkit.JavascriptInterface;
 
 public class MainActivity extends Activity {
+    public class PdfBridge {
+        @JavascriptInterface public void savePdf() {
+            runOnUiThread(() -> {
+                if (web == null) return;
+                PrintManager manager = (PrintManager) getSystemService(Context.PRINT_SERVICE);
+                if (manager != null) {
+                    manager.print("GB-Kalendarz-Rozliczen", web.createPrintDocumentAdapter("GB-Kalendarz-Rozliczen"), new PrintAttributes.Builder().build());
+                }
+            });
+        }
+    }
     private WebView web;
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
@@ -19,6 +31,7 @@ public class MainActivity extends Activity {
         web.setWebChromeClient(new WebChromeClient());
         WebSettings s = web.getSettings();
         s.setJavaScriptEnabled(true);
+        web.addJavascriptInterface(new PdfBridge(), "GBAndroid");
         s.setDomStorageEnabled(true);
         s.setAllowFileAccess(true);
         s.setDefaultTextEncodingName("UTF-8");
