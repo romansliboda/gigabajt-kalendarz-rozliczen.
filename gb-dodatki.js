@@ -3,7 +3,7 @@ const palette=[['Biały','#ffffff'],['Kremowy','#fffaf0'],['Jasnoszary','#edf0f4
 const defaults={clockMode:'auto',manualDate:'2026-10-18',manualTime:'15:43',showTime:true,showDate:true,bg:'#ffffff',theme:'light',lang:'pl'};
 let cfg={...defaults};try{const s=JSON.parse(localStorage.getItem('gb-rozliczenia-wyglad-v2')||'null');if(s&&typeof s==='object')cfg={...cfg,...s}}catch(e){}
 const $=id=>document.getElementById(id),save=()=>{localStorage.setItem('gb-rozliczenia-wyglad-v2',JSON.stringify(cfg));apply()};
-const translations={
+const translations={'Uprawnienia':['Permissions','Berechtigungen'],
 'Gigabajt — Kalendarz rozliczeń':['Gigabajt — Billing calendar','Gigabajt — Abrechnungskalender'],'Kalendarz rozliczeń':['Billing calendar','Abrechnungskalender'],'Ustawienia':['Settings','Einstellungen'],'Ustawienia aplikacji':['App settings','App-Einstellungen'],'Godzina i data':['Time and date','Uhrzeit und Datum'],'Automatycznie':['Automatic','Automatisch'],'Ręcznie':['Manual','Manuell'],'Pokazuj godzinę':['Show time','Uhrzeit anzeigen'],'Pokazuj datę':['Show date','Datum anzeigen'],'Kolor tła kalendarza':['Calendar background colour','Kalender-Hintergrundfarbe'],'Motyw aplikacji':['App theme','App-Design'],'Jasny':['Light','Hell'],'Ciemny':['Dark','Dunkel'],'Język':['Language','Sprache'],'Zamknij ustawienia':['Close settings','Einstellungen schließen'],
 'Październik 2026':['October 2026','Oktober 2026'],'Pn':['Mon','Mo'],'Wt':['Tue','Di'],'Śr':['Wed','Mi'],'Cz':['Thu','Do'],'Pt':['Fri','Fr'],'So':['Sat','Sa'],'Nd':['Sun','So'],
 'Ustawienia dniówki':['Daily rate settings','Tagessatz-Einstellungen'],'Ustawienia kilometrówki':['Mileage settings','Kilometergeld-Einstellungen'],'W trasie':['On the road','Unterwegs'],'W domu':['At home','Zu Hause'],'⚙ Ustawienia rozliczenia':['⚙ Billing settings','⚙ Abrechnungseinstellungen'],'Ustawienia rozliczenia':['Billing settings','Abrechnungseinstellungen'],'Wybierz sposób rozliczania:':['Choose billing method:','Abrechnungsmethode wählen:'],'Dniówki':['Daily rates','Tagessätze'],'Kilometrówka':['Mileage','Kilometergeld'],'Razem za miesiąc':['Monthly total','Monatssumme'],'▤ Zapisz w PDF':['▤ Save as PDF','▤ Als PDF speichern'],'Zapisz w PDF':['Save as PDF','Als PDF speichern'],
@@ -19,10 +19,30 @@ function tr(v){const pl=reverse.get(v)||v;const entry=translations[pl];return !e
 const settings=$('gbAppSettings');
 const VERSION='2.5.0';let settingsPage='menu';
 const ui={pl:{clock:'Data i godzina',colors:'Kolory kalendarza',theme:'Wygląd aplikacji',language:'Język',version:'Wersja aplikacji',back:'← Wróć',close:'Zamknij ustawienia',title:'Ustawienia aplikacji',info:'Wersja internetowa · GB Kalendarz rozliczeń'},en:{clock:'Date and time',colors:'Calendar colours',theme:'App appearance',language:'Language',version:'App version',back:'← Back',close:'Close settings',title:'App settings',info:'Web version · GB Billing calendar'},de:{clock:'Datum und Uhrzeit',colors:'Kalenderfarben',theme:'App-Design',language:'Sprache',version:'App-Version',back:'← Zurück',close:'Einstellungen schließen',title:'App-Einstellungen',info:'Webversion · GB Abrechnungskalender'}};
+const gbPermissions = {
+  get gps() { return localStorage.getItem('gbGPS') === 'true'; },
+  set gps(v) { localStorage.setItem('gbGPS', String(v)); },
+  get internet() { return localStorage.getItem('gbInternet') === 'true'; },
+  set internet(v) { localStorage.setItem('gbInternet', String(v)); }
+};
 function settingsUI(){const T=x=>tr(x),u=ui[cfg.lang]||ui.pl;
-const items=[['clock','clock'],['colors','palette'],['theme','sun'],['language','globe'],['version','info']];
+const items=[['clock','clock'],['colors','palette'],['theme','sun'],['language','globe'],['permissions','lock'],['version','info']];
 let body='';
-if(settingsPage==='menu')body=`<div class="gb-menu">${items.map(([id,ico])=>`<button type="button" class="gb-menu-tile" data-section="${id}"><span class="gb-menu-icon">${{clock:'🕒',colors:'🎨',theme:'🌓',language:'🌐',version:'ℹ️'}[id]}</span><span>${u[id]}</span><span class="gb-menu-arrow">›</span></button>`).join('')}</div>`;
+if(settingsPage==='menu')body=`<div class="gb-menu">${items.map(([id,ico])=>`<button type="button" class="gb-menu-tile" data-section="${id}"><span class="gb-menu-icon">${{clock:'🕒',colors:'🎨',theme:'🌓',language:'🌐',permissions:'🔐',version:'ℹ️'}[id]}</span><span>${u[id]}</span><span class="gb-menu-arrow">›</span></button>`).join('')}</div>`;
+if(settingsPage==='permissions')body=`
+<h4>🔐 Uprawnienia</h4>
+<p>Włącz lub wyłącz dostęp modułu zakazów jazdy do GPS i internetu.</p>
+<div style="display:grid;gap:14px">
+<label style="display:flex;justify-content:space-between;align-items:center;padding:14px;border:1px solid #cbd5e1;border-radius:12px">
+<span>📍 Lokalizacja GPS</span>
+<input type="checkbox" id="gbPermissionGPS" ${gbPermissions.gps?'checked':''}>
+</label>
+<label style="display:flex;justify-content:space-between;align-items:center;padding:14px;border:1px solid #cbd5e1;border-radius:12px">
+<span>🌐 Internet</span>
+<input type="checkbox" id="gbPermissionInternet" ${gbPermissions.internet?'checked':''}>
+</label>
+</div>
+<p>GPS wymaga również zgody systemowej Androida.</p>`;
 if(settingsPage==='clock')body=`<h4>${u.clock}</h4><label><input type="radio" name="gbClockMode" value="auto" ${cfg.clockMode==='auto'?'checked':''}> ${T('Automatycznie')}</label><label><input type="radio" name="gbClockMode" value="manual" ${cfg.clockMode==='manual'?'checked':''}> ${T('Ręcznie')}</label><div id="gbManual" ${cfg.clockMode==='auto'?'hidden':''}><label>${T('Data')}<input type="date" id="gbManualDate" value="${cfg.manualDate}"></label><label>${T('Godzina i data')}<input type="time" id="gbManualTime" value="${cfg.manualTime}"></label></div><label><input type="checkbox" id="gbShowTime" ${cfg.showTime?'checked':''}> ${T('Pokazuj godzinę')}</label><label><input type="checkbox" id="gbShowDate" ${cfg.showDate?'checked':''}> ${T('Pokazuj datę')}</label>`;
 if(settingsPage==='colors')body=`<h4>${u.colors}</h4><div class="gb-palette">${palette.map(([name,color])=>`<button type="button" class="gb-color ${cfg.bg===color?'active':''}" data-color="${color}" style="background:${color}" title="${name}" aria-label="${name}"></button>`).join('')}</div>`;
 if(settingsPage==='theme')body=`<h4>${u.theme}</h4><label><input type="radio" name="gbTheme" value="light" ${cfg.theme==='light'?'checked':''}> ${T('Jasny')}</label><label><input type="radio" name="gbTheme" value="dark" ${cfg.theme==='dark'?'checked':''}> ${T('Ciemny')}</label>`;
@@ -33,6 +53,12 @@ settings.querySelectorAll('[data-section]').forEach(x=>x.onclick=()=>{settingsPa
 settings.querySelectorAll('input[name=gbClockMode]').forEach(x=>x.onchange=()=>{cfg.clockMode=x.value;save();settingsUI()});settings.querySelectorAll('input[name=gbTheme]').forEach(x=>x.onchange=()=>{cfg.theme=x.value;save()});settings.querySelectorAll('[data-color]').forEach(x=>x.onclick=()=>{cfg.bg=x.dataset.color;save();settingsUI()});
 if($('gbShowTime'))$('gbShowTime').onchange=e=>{cfg.showTime=e.target.checked;save()};if($('gbShowDate'))$('gbShowDate').onchange=e=>{cfg.showDate=e.target.checked;save()};if($('gbManualDate'))$('gbManualDate').onchange=e=>{cfg.manualDate=e.target.value;save()};if($('gbManualTime'))$('gbManualTime').onchange=e=>{cfg.manualTime=e.target.value;save()};if($('gbLanguage'))$('gbLanguage').onchange=e=>{cfg.lang=e.target.value;save();settingsUI()};$('gbClose').onclick=()=>{if(settingsPage==='menu')settings.hidden=true;else{settingsPage='menu';settingsUI()}};
 }
+if($('gbPermissionGPS'))$('gbPermissionGPS').onchange=e=>{
+  gbPermissions.gps=e.target.checked; if(typeof window.gbZakazyGPS==="function") window.gbZakazyGPS();
+};
+if($('gbPermissionInternet'))$('gbPermissionInternet').onchange=e=>{
+  gbPermissions.internet=e.target.checked;
+};
 $('gbGear').onclick=()=>{settings.hidden=!settings.hidden;if(!settings.hidden){settingsPage='menu';settingsUI()}};
 function clock(){let d=cfg.clockMode==='auto'?new Date():new Date(cfg.manualDate+'T'+cfg.manualTime+':00');if(Number.isNaN(d.getTime()))d=new Date();$('gbTime').textContent=cfg.showTime?d.toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'}):'';$('gbDate').textContent=cfg.showDate?d.toLocaleDateString('pl-PL'):'';$('gbClock').hidden=!cfg.showTime&&!cfg.showDate}
 const monthForms=['stycznia','lutego','marca','kwietnia','maja','czerwca','lipca','sierpnia','września','października','listopada','grudnia'];

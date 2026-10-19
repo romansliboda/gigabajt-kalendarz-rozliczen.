@@ -13,6 +13,21 @@ import android.webkit.WebSettings;
 import android.webkit.JavascriptInterface;
 
 public class MainActivity extends Activity {
+    private android.webkit.GeolocationPermissions.Callback pendingGeoCallback;
+    private String pendingGeoOrigin;
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 1001 && pendingGeoCallback != null) {
+            boolean granted = grantResults.length > 0 &&
+                grantResults[0] == android.content.pm.PackageManager.PERMISSION_GRANTED;
+            pendingGeoCallback.invoke(pendingGeoOrigin, granted, false);
+            pendingGeoCallback = null;
+            pendingGeoOrigin = null;
+        }
+    }
+
     public class PdfBridge {
         @JavascriptInterface public void savePdf() {
             runOnUiThread(() -> {
@@ -40,7 +55,7 @@ public class MainActivity extends Activity {
                         new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
                         1001
                     );
-                    callback.invoke(origin, false, false);
+                    pendingGeoCallback = callback; pendingGeoOrigin = origin;
                 } else {
                     callback.invoke(origin, true, false);
                 }
